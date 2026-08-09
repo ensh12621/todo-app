@@ -4,9 +4,10 @@ interface Button1Props {
     title: string;
     color?: "blue" | "black" | "green";
     onClick? : () => void;
+    extraCss?: string;
 }
 
-export default function Button1({ title, color = "blue", onClick }: Button1Props) {
+export default function Button1({ title, color = "blue", onClick, extraCss }: Button1Props) {
 
     let colorCss = null;
     switch (color) {
@@ -25,7 +26,7 @@ export default function Button1({ title, color = "blue", onClick }: Button1Props
 
     return (
         <button
-            className={`${colorCss} p-3 pl-5 pr-5 rounded-md cursor-pointer`}
+            className={`${colorCss} p-3 pl-5 pr-5 rounded-md cursor-pointer ${extraCss}`}
             onClick={onClick}
             >
             {title}

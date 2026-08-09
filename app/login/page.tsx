@@ -1,3 +1,4 @@
+import isJwtStored from "../lib/member-api";
 import LoginForm from "./login-form";
 import LoginSuccessAlarm from "./LoginSuccessAlarm";
 
@@ -12,7 +13,6 @@ export default async function Page({ searchParams }: PageProps) {
     const params = await searchParams;
     const isSuccess = params.signupSucess; // "true"
 
-    
 
     return (
         <div className="w-screen h-screen relative">
