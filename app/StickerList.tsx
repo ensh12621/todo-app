@@ -41,10 +41,6 @@ export default function StickerList( {memoList} : StickerListProps){
         setShowNewMemoDialog(false);
     };
 
-    if(memoList && memoList.length == 0){
-        return <p>어떤 메모도 등록이 되어 있지 않습니다. 추가해주세요.</p>
-    }
-
     return (
         <>
             <ul className="flex gap-10 pt-5 flex-wrap">
