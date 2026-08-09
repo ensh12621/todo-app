@@ -2,7 +2,7 @@
 
 interface Button1Props {
     title: string;
-    color?: "blue" | "black";
+    color?: "blue" | "black" | "green";
     onClick? : () => void;
 }
 
@@ -13,12 +13,14 @@ export default function Button1({ title, color = "blue", onClick }: Button1Props
 
 
         case "blue":
-            colorCss = "bg-blue-400 hover:bg-blue-400 text-white";
+            colorCss = "bg-blue-400 hover:bg-blue-600 text-white";
             break;
         case "black":
             colorCss = "bg-black hover:bg-gray-600 text-white";
             break;
-
+        case "green":
+            colorCss = "bg-green-400 hover:bg-green-600 text-white";
+            break;
     }
 
     return (
