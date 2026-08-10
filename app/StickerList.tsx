@@ -1,17 +1,17 @@
 'use client'
 
-import React, { useState } from "react";
-import { MemoEntity, saveNewMemo } from "./lib/memo-api";
+import React, { useMemo, useState } from "react";
+import { saveNewMemo } from "./lib/memo-api";
 import EmptyMemoCard from "./ui/EmptyMemoCard";
 import MemoCard from "./ui/MemoCard";
 import NewMemoDialog from "./ui/NewMemoDialog";
+import { useMemoStore } from "./data/memo-store";
 
-interface StickerListProps{
-    memoList : Array<MemoEntity>;
-}
 
-export default function StickerList( {memoList} : StickerListProps){
-      
+export default function StickerList( /*{memoList} : StickerListProps*/){
+    
+    const {memos : memoList} = useMemoStore();
+    
     const [showNewMemoDialog, setShowNewMemoDialog] = useState(false);
 
     const handleShowNewMemoDialog = () => {

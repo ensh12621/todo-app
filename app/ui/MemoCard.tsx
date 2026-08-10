@@ -1,6 +1,6 @@
 'use client'
 
-import { MemoEntity } from "../lib/memo-api";
+import { MemoEntity } from "../data/memo-store";
 
 interface MemoCardProps {
     memoItem : MemoEntity;

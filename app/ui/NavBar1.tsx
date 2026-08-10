@@ -1,12 +1,10 @@
 'use client'
 
-import { LogOut, Menu } from "lucide-react";
 import Header from "./Header";
 import SearchBar from "./SearchBar";
 import HamburgerButton from "./HamburgerButton";
 import { useState } from "react";
-import Button1 from "./Button1";
-import isJwtStored, { logOut } from "../lib/member-api";
+import { logOut } from "../lib/member-api";
 
 interface NavBar1Props {
     isLoggedOn : boolean;

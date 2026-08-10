@@ -4,18 +4,14 @@
 import Header from "./ui/Header";
 import HorizontalDivider from "./ui/HorizontalDivider";
 import StickerList from "./StickerList";
-import { getMemoList } from "@/app/lib/memo-api";
-
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import isJwtStored from "./lib/member-api";
+import MemoInitializer from "./MemoProvider";
+import { getMemoList } from "./lib/memo-api";
 
 
 export default async function Home() {
   const jwt = await isJwtStored();
-  console.log('jwt ----');
-  console.log(jwt);
-  console.log('jwt ----end ');
   if (!jwt)
     redirect("/login/");
 
@@ -24,6 +20,8 @@ export default async function Home() {
   return (
     <div className="p-5 w-full">
 
+      <MemoInitializer  initialValue={memoList2} />
+
       <Header
         text="스티커 메모"
       />
@@ -31,7 +29,7 @@ export default async function Home() {
       <HorizontalDivider />
 
       <StickerList
-        memoList={memoList2}
+        // memoList={memoList2}
       />
     </div>
   );

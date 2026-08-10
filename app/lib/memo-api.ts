@@ -2,14 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
+import { MemoEntity } from "../data/memo-store";
 
 
-
-export interface MemoEntity {
-    idx: number;
-    title: string;
-    content: string;
-}
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 async function retrieveJwt() {
     const cookieStore = await cookies();
@@ -20,8 +16,7 @@ async function retrieveJwt() {
 export async function getMemoList(): Promise<Array<MemoEntity>> {
 
     // const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://my-spring-boot-app:8080" as string;
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    console.log(`getMemoList().. url => ${apiUrl}/todo/get-todo-list`);
+    // console.log(`getMemoList().. url => ${apiUrl}/todo/get-todo-list`);
 
     const jwt = await retrieveJwt();
     if (jwt.length == 0)
@@ -40,7 +35,7 @@ export async function getMemoList(): Promise<Array<MemoEntity>> {
             throw new Error(`조회 실패 - ${response.status}`);
         }
 
-        console.log("getMemoList().. fetching..성공 api..");
+        // console.log("getMemoList().. fetching..성공 api..");
 
         return await response.json();
     } catch (error) {
@@ -49,8 +44,6 @@ export async function getMemoList(): Promise<Array<MemoEntity>> {
     }
 }
 
-//saveNewMemo({title:newTitle, content:newContent});
-
 export async function saveNewMemo(title: string, content: string) {
 
     const jwt = await retrieveJwt();
@@ -58,8 +51,7 @@ export async function saveNewMemo(title: string, content: string) {
         return [];
 
     // const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://my-spring-boot-app:8080" as string;
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    console.log(`getMemoList().. url => ${apiUrl}/todo/save-new-todo`);
+    // console.log(`getMemoList().. url => ${apiUrl}/todo/save-new-todo`);
 
     try {
         const data = {
@@ -89,3 +81,18 @@ export async function saveNewMemo(title: string, content: string) {
     }
 }
 
+export default async function searchByTitle(keyword: string) {
+    const jwt = await retrieveJwt();
+    if (jwt.length == 0)
+        return [];
+
+    console.log(`keyword => ${keyword}`);
+
+    return await fetch(`${apiUrl}/todo/search-by-title?keyword=${keyword}`, {
+        method: "get",
+        headers : {
+            "Authorization" : `Bearer ${jwt}`
+        }
+    }).then(response => response.json());
+    
+}
