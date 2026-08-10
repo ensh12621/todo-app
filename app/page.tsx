@@ -12,7 +12,10 @@ import isJwtStored from "./lib/member-api";
 
 
 export default async function Home() {
-  const jwt = isJwtStored();
+  const jwt = await isJwtStored();
+  console.log('jwt ----');
+  console.log(jwt);
+  console.log('jwt ----end ');
   if (!jwt)
     redirect("/login/");
 
