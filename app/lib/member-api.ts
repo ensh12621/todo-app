@@ -1,8 +1,9 @@
 'use server'
 
-import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { setCookie } from "./common-api";
+
 
 export async function saveNewMember(email: string, password: string, nickname: string) {
 
@@ -37,8 +38,28 @@ export async function saveNewMember(email: string, password: string, nickname: s
 
 export default async function isJwtStored() {
     const cookieStore = await cookies();
-    return cookieStore.get("jwt") != null;
+    const isJwtStored = cookieStore.get("jwt") != null;
+    const isRefreshStored = cookieStore.get("refresh") != null;
+
+    let jwt = cookieStore.get("jwt");
+    let refresh = cookieStore.get("refresh");
+    if (jwt && refresh) {
+        console.log("jwt------------------------------------------------start");
+        console.log(jwt.value);
+        console.log(refresh.value);
+        console.log("jwt------------------------------------------------end");
+    }
+
+    return isJwtStored && isRefreshStored;
 }
+
+interface AuthTokenSetType {
+    jwt: string;
+    refresh: string;
+}
+
+
+
 
 export async function login(email: string, password: string) {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -49,39 +70,34 @@ export async function login(email: string, password: string) {
             password: password
         };
 
-        console.log("api url => " + apiUrl);
-
+        console.log(`${apiUrl}/member/login`);
         console.log(`api login() .. ${email} / ${password}`);
 
-        const jwt = await fetch(`${apiUrl}/member/login`, {
+        const authTokenSet: AuthTokenSetType = await fetch(`${apiUrl}/member/login`, {
             method: "post",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify(data)
-        }).then(response => response.text());
+        }).then(response => response.json());
 
-        const cookieStore = await cookies();
-        cookieStore.set('jwt', jwt, {
-            httpOnly: true,
-            secure: false, // 아직 https 인증서 없으니..
-            sameSite: "lax",
-            maxAge: 60 * 5, // 5분 유지
-            path: "/"
-        });
+        console.log(`${authTokenSet.jwt} / ${authTokenSet.refresh}`);
+        await setCookie("jwt", authTokenSet.jwt, 10); // 30초 유지
+        await setCookie("refresh", authTokenSet.refresh, 60 * 15); // 15분 유지
+        console.log('test');
 
-        redirect("/");
+       
 
     } catch (error) {
         console.log(error);
-        throw error;
     }
+
+     redirect("/");
 }
-
-
 
 export async function logOut() {
     const cookieStore = await cookies();
     cookieStore.delete("jwt");
+    // todo - refresh table entry 삭제
     redirect("/login")
 }

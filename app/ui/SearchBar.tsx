@@ -2,7 +2,7 @@
 import { Search } from "lucide-react";
 import React, { useState } from "react";
 import searchByTitle from "../lib/memo-api";
-import { useMemoStore } from "../data/memo-store";
+import { useMemoStore } from "../store/memo-store";
 
 
 interface SearchBarProps {

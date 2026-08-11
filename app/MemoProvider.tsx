@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from "react";
-import { MemoEntity, useMemoStore } from "./data/memo-store";
+import { MemoEntity, useMemoStore } from "./store/memo-store";
 
 
 interface MemoProviderProps{

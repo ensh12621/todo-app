@@ -11,8 +11,8 @@ import { getMemoList } from "./lib/memo-api";
 
 
 export default async function Home() {
-  const jwt = await isJwtStored();
-  if (!jwt)
+  const isStored = await isJwtStored();
+  if (!isStored)
     redirect("/login/");
 
   const memoList2 = await getMemoList();

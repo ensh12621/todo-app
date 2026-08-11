@@ -5,7 +5,7 @@ import { saveNewMemo } from "./lib/memo-api";
 import EmptyMemoCard from "./ui/EmptyMemoCard";
 import MemoCard from "./ui/MemoCard";
 import NewMemoDialog from "./ui/NewMemoDialog";
-import { useMemoStore } from "./data/memo-store";
+import { useMemoStore } from "./store/memo-store";
 
 
 export default function StickerList( /*{memoList} : StickerListProps*/){
