@@ -1,26 +1,25 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import { MemoEntity } from "../store/memo-store";
-import { setCookie } from "./common-api";
+import { apiWithJsonDataAndJwt, apiWithJsonDataAndJwtParams, getCookie,  withJsonReceived, withJwtAsync } from "./common-api";
 
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-async function retrieveJwt() {
-    const cookieStore = await cookies();
-    const jwtHolder = cookieStore.get("jwt");
-    return jwtHolder ? jwtHolder.value : "";
-}
+// async function retrieveJwt() {
+//     const cookieStore = await cookies();
+//     const jwtHolder = cookieStore.get("jwt");
+//     return jwtHolder ? jwtHolder.value : "";
+// }
 
 export async function getMemoList(): Promise<Array<MemoEntity>> {
 
     // const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://my-spring-boot-app:8080" as string;
     // console.log(`getMemoList().. url => ${apiUrl}/todo/get-todo-list`);
 
-    const jwt = await retrieveJwt();
-    if (jwt.length == 0)
+    const jwt = await getCookie("jwt");
+    if (!jwt)
         return [];
 
     try {
@@ -48,131 +47,41 @@ export async function getMemoList(): Promise<Array<MemoEntity>> {
     }
 }
 
-async function refreshJwt() {
-    const params = new URLSearchParams();
 
-    const cookieStore = await cookies();
-    const refreshToken = cookieStore.get("refresh")?.value;
 
-    if (refreshToken) {
-        console.log("refreshing jwt..");
-        params.append("refreshToken", refreshToken);
+export async function saveNewMemo2(title: string, content: string) {
 
-        try {
+    const data = {
+        title: title,
+        content: content
+    };
 
-            const newJwt = await fetch(`${apiUrl}/member/refresh-JWT`, {
-                method: "post",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                },
-                body: params
-            }).then(response => response.text());
+    const params: apiWithJsonDataAndJwtParams = {
+        uri: "/todo/save-new-todo",
+        data: data,
+        method: "POST",
+        withHeaders: [withJsonReceived, withJwtAsync]
+    };
 
-            console.log(`new jwt => ${newJwt}`);
-            setCookie("jwt", newJwt, 1 * 30);
+    console.log(`with header - withJsonReceived, withJwtAsync`);
 
-            return newJwt;
-        } catch (err) {
-            console.log(err);
-            throw err;
-        }
+    const result = await apiWithJsonDataAndJwt(params);
 
+    if (result && result.status == 200) {
+        console.log("new memo added");
+        revalidatePath("/"); // invalidate cache and reload the page
+        return true; // 클라이언트 코드에서 boolean 값에 따라 추가 작업 진행할지 결정되므로 return true를 함.
     } else {
-        throw new Error("refresh token is not presented")
-    }
+        return false;
 
-}
-
-export async function saveNewMemo(title: string, content: string) {
-
-    console.log("도달 1");
-
-    let isFailedWithTokenExpiration = false;
-
-    try {
-        const data = {
-            title: title, content: content
-        }
-
-        console.log("도달 2");
-
-        await fetch(`${apiUrl}/todo/save-new-todo`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${await retrieveJwt()}`
-            },
-            body: JSON.stringify(data)
-        })
-            .then(response => {
-                console.log("도달 3");
-
-
-                if (response.status == 200) {
-                    revalidatePath("/", "layout");
-                    return { success: true };
-                } else if (response.status == 403) {
-                    console.log("도달 5")
-                    isFailedWithTokenExpiration = true;
-                }
-
-            });
-
-    } catch (error) {
-        console.log("도달 4");
-        console.log(`error => ${error}`);
-        throw error;
-    }
-
-    if (isFailedWithTokenExpiration) {
-        await refreshJwt();
-
-        console.log("도달 6");
-
-        try {
-            const data = {
-                title: title, content: content
-            }
-
-            console.log(`도달 7 - jwt (${retrieveJwt()})`);
-
-            await fetch(`${apiUrl}/todo/save-new-todo`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${await retrieveJwt()}`
-                },
-                body: JSON.stringify(data)
-            })
-                .then(response => {
-                    console.log("도달 8");
-
-
-                    // TODO 리팩터링
-
-                    if (response.status == 200) {
-                        revalidatePath("/", "layout");
-                        console.log("도달 9");
-                        return { success: true };
-                        
-                    } else if (response.status == 403) {
-                        console.log("도달 10");
-                        isFailedWithTokenExpiration = true;
-                    }
-
-                });
-
-        } catch (error) {
-            console.log("도달 11");
-            console.log(`error => ${error}`);
-            throw error;
-        }
     }
 }
+
+
 
 export default async function searchByTitle(keyword: string) {
-    const jwt = await retrieveJwt();
-    if (jwt.length == 0)
+    const jwt = await getCookie("jwt");
+    if (!jwt)
         return [];
 
     console.log(`keyword => ${keyword}`);

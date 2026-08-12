@@ -1,17 +1,18 @@
 'use client'
 
 import React, { useMemo, useState } from "react";
-import { saveNewMemo } from "./lib/memo-api";
+import { saveNewMemo2 } from "./lib/memo-api";
 import EmptyMemoCard from "./ui/EmptyMemoCard";
 import MemoCard from "./ui/MemoCard";
 import NewMemoDialog from "./ui/NewMemoDialog";
 import { useMemoStore } from "./store/memo-store";
+import { refreshJwt } from "./lib/common-api";
 
 
-export default function StickerList( /*{memoList} : StickerListProps*/){
-    
-    const {memos : memoList} = useMemoStore();
-    
+export default function StickerList( /*{memoList} : StickerListProps*/) {
+
+    const { memos: memoList } = useMemoStore();
+
     const [showNewMemoDialog, setShowNewMemoDialog] = useState(false);
 
     const handleShowNewMemoDialog = () => {
@@ -26,19 +27,29 @@ export default function StickerList( /*{memoList} : StickerListProps*/){
     const [newTitle, setNewTitle] = useState("");
     const [newContent, setNewContent] = useState("");
 
-    const handleChangeNewTitle = (e : React.ChangeEvent<HTMLInputElement>) => {
+    const handleChangeNewTitle = (e: React.ChangeEvent<HTMLInputElement>) => {
         setNewTitle(e.target.value);
     };
 
-    const handleChangeNewContent = (e : React.ChangeEvent<HTMLTextAreaElement>) => {
+    const handleChangeNewContent = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setNewContent(e.target.value);
     };
 
-    const handleSaveNewMemo =  () => {
-        saveNewMemo(newTitle, newContent);
-        setNewTitle("");
-        setNewContent("");
-        setShowNewMemoDialog(false);
+    const handleSaveNewMemo = async () => {
+        // saveNewMemo(newTitle, newContent);
+        if (await saveNewMemo2(newTitle, newContent)) {
+            setNewTitle("");
+            setNewContent("");
+            setShowNewMemoDialog(false);
+        } else {
+            await refreshJwt();
+            console.log("retry to save new memo again with new jwt generated using refresh key..");
+            await saveNewMemo2(newTitle, newContent)
+            setNewTitle("");
+            setNewContent("");
+            setShowNewMemoDialog(false);
+        }
+
     };
 
     return (
@@ -49,18 +60,18 @@ export default function StickerList( /*{memoList} : StickerListProps*/){
                 ))}
                 <EmptyMemoCard
                     handleClick={handleShowNewMemoDialog}
-                    />
+                />
             </ul>
 
             {showNewMemoDialog && (
-                <NewMemoDialog 
+                <NewMemoDialog
                     newTitle={newTitle}
                     newContent={newContent}
                     handleChangeNewTitle={handleChangeNewTitle}
                     handleChangeNewContent={handleChangeNewContent}
-                    handleHideNewMemoDialog={handleHideNewMemoDialog} 
+                    handleHideNewMemoDialog={handleHideNewMemoDialog}
                     handleSaveNewMemo={handleSaveNewMemo}
-                    />
+                />
             )}
         </>
     );

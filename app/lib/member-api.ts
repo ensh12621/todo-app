@@ -3,12 +3,12 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { setCookie } from "./common-api";
+import { apiUrl } from "./config";
 
 
 export async function saveNewMember(email: string, password: string, nickname: string) {
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
+   
 
 
     try {
@@ -43,12 +43,6 @@ export default async function isJwtStored() {
 
     let jwt = cookieStore.get("jwt");
     let refresh = cookieStore.get("refresh");
-    if (jwt && refresh) {
-        console.log("jwt------------------------------------------------start");
-        console.log(jwt.value);
-        console.log(refresh.value);
-        console.log("jwt------------------------------------------------end");
-    }
 
     return isJwtStored && isRefreshStored;
 }
@@ -82,7 +76,7 @@ export async function login(email: string, password: string) {
         }).then(response => response.json());
 
         console.log(`${authTokenSet.jwt} / ${authTokenSet.refresh}`);
-        await setCookie("jwt", authTokenSet.jwt, 10); // 30초 유지
+        await setCookie("jwt", authTokenSet.jwt, 30); // 30초 유지
         await setCookie("refresh", authTokenSet.refresh, 60 * 15); // 15분 유지
         console.log('test');
 
