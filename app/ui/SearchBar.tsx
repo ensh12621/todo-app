@@ -1,8 +1,8 @@
 'use client'
 import { Search } from "lucide-react";
 import React, { useState } from "react";
-import searchByTitle from "../lib/memo-api";
 import { useMemoStore } from "../store/memo-store";
+import searchByTitle from "../lib/memo-api2";
 
 
 interface SearchBarProps {

@@ -54,6 +54,8 @@ export interface apiParam {
     withHeaders: withHeader[];
 }
 
+
+
 export async function apiWithJwtTemplate({ uri, data, method }: apiParam) {
 
     
@@ -113,15 +115,15 @@ export async function callApi({ uri, data, method, withHeaders }: apiParam) {
         headers
     };
 
-    // console.log(`\n\n`);
-    // console.log(`url: -> ${uri}`)
-    // console.log(`------------data`);
-    // console.log(data);
-    // console.log(`------------data end`);
-    // console.log('------------header');
-    // console.log(headers);
-    // console.log('------------header end');
-    // console.log(`\n\n`);
+    console.log(`\n\n`);
+    console.log(`url: -> ${uri}`)
+    console.log(`------------data`);
+    console.log(data);
+    console.log(`------------data end`);
+    console.log('------------header');
+    console.log(headers);
+    console.log('------------header end');
+    console.log(`\n\n`);
 
 
     try {
@@ -166,3 +168,57 @@ export async function refreshJwt() {
     }
 }
 
+////////////////////////////
+
+
+
+export interface apiGetWithJwtTemplateParams {
+    uri: string
+    urlParams: string;
+}
+
+export interface apiGetParam {
+    uri: string;
+    method: "GET";
+    withHeaders: withHeader[];
+}
+
+
+export async function apiGetWithJwtTemplate({ uri, urlParams }: apiGetWithJwtTemplateParams) {
+
+    
+    let params: apiGetParam = {
+        uri: `${uri}?${urlParams}`,
+        method: "GET",
+        withHeaders: [withHeaderJwt]
+    };
+
+    console.log();
+    console.log("-------------params :start");
+    console.log(params);
+    console.log("-------------params :end");
+    console.log();
+
+    const result = await callApi(params);
+
+    if (result && result.status == 200) {
+        return {
+            status: result.status,
+            data: result.data
+        }
+    } else {
+        if (result && result.status == 403) {
+            console.log("jwt refreshing..");
+            await refreshJwt();
+
+            return await callApi(params);
+        } else {
+            return {
+                status: result?.status,
+                data: "error"
+            };
+        }
+
+
+    }
+}

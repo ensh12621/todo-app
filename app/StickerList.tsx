@@ -41,6 +41,8 @@ export default function StickerList() {
         setShowNewMemoDialog(false);
     };
 
+    
+
     return (
         <>
             <ul className="flex gap-10 pt-5 flex-wrap">

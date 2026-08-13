@@ -17,7 +17,6 @@ export default async function Home() {
     redirect("/login")
   }
 
-  // TODO: 처음부터 memo-api2.ts에서 다시 시작
   const memoList = await getMemoList();
 
   return (
