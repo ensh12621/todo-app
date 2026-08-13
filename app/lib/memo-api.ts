@@ -1,112 +1,141 @@
-"use server";
+// "use server";
 
-import { revalidatePath } from "next/cache";
-import { MemoEntity } from "../store/memo-store";
-import { apiWithJsonDataAndJwt, apiWithJsonDataAndJwtParams, apiWithJwtTemplate, getCookie, withJsonReceived, withJwtAsync } from "./common-api";
+// import { revalidatePath } from "next/cache";
+// import { MemoEntity } from "../store/memo-store";
+// //import {apiWithJwtTemplate, getCookie } from "./common-api";
 
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+// const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-// async function retrieveJwt() {
-//     const cookieStore = await cookies();
-//     const jwtHolder = cookieStore.get("jwt");
-//     return jwtHolder ? jwtHolder.value : "";
+// // async function retrieveJwt() {
+// //     const cookieStore = await cookies();
+// //     const jwtHolder = cookieStore.get("jwt");
+// //     return jwtHolder ? jwtHolder.value : "";
+// // }
+
+
+
+
+// export async function getMemoList2(): Promise<Array<MemoEntity>> {
+
+
+//     const result = await apiWithJwtTemplate({
+//         uri: "/todo/get-todo-list",
+//         method: "GET"
+//     });
+
+//     if (result) {
+//         //console.log();
+//         //console.log("getMemoList2() retrieving..-------------------------");
+
+//         // console.log(result?.status);
+//         // console.log(result?.data);
+//         // console.log("getMemoList2() retrieving..----------------------end");
+//         return result?.data;
+//     }
+
+//     return [];
 // }
 
-export async function getMemoList(): Promise<Array<MemoEntity>> {
 
-    // const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://my-spring-boot-app:8080" as string;
-    // console.log(`getMemoList().. url => ${apiUrl}/todo/get-todo-list`);
+// ////////////////
 
-    const jwt = await getCookie("jwt");
-    if (!jwt)
-        return [];
+// export async function getMemoList(): Promise<Array<MemoEntity>> {
 
-    try {
-        const response = await fetch(`${apiUrl}/todo/get-todo-list`, {
-            method: "GET",
-            headers: {
-                "Accept": "application/json",
-                "Authorization": `Bearer ${jwt}`
-            },
-        });
+//     // const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://my-spring-boot-app:8080" as string;
+//     // console.log(`getMemoList().. url => ${apiUrl}/todo/get-todo-list`);
 
-        if (!response.ok) {
-            console.log("조회실패 --------------");
-            console.log(response.statusText);
-            console.log("조회실패 --------------");
-            throw new Error(`조회 실패 - ${response.status}`);
-        }
+//     const jwt = await getCookie("jwt");
+//     if (!jwt)
+//         return [];
 
-        // console.log("getMemoList().. fetching..성공 api..");
+//     try {
+//         const response = await fetch(`${apiUrl}/todo/get-todo-list`, {
+//             method: "GET",
+//             headers: {
+//                 "Accept": "application/json",
+//                 "Authorization": `Bearer ${jwt}`
+//             },
+//         });
 
-        return await response.json();
-    } catch (error) {
-        console.log(error);
-        return [];
-    }
-}
+//         if (!response.ok) {
+//             console.log("조회실패 --------------");
+//             console.log(response.statusText);
+//             console.log("조회실패 --------------");
+//             throw new Error(`조회 실패 - ${response.status}`);
+//         }
 
-export async function saveNewMemo3(title: string, content: string) {
+//         // console.log("getMemoList().. fetching..성공 api..");
 
-    const data = {
-        title: title,
-        content: content
-    };
+//         return await response.json();
+//     } catch (error) {
+//         console.log(error);
+//         return [];
+//     }
+// }
 
-    const result = await apiWithJwtTemplate({
-        uri: "/todo/save-new-todo",
-        data: data,
-        method: "POST"
-    });
-
-    if(result && result.status == 200){
-        revalidatePath("/");
-    }
-}
-
-// export async function saveNewMemo2(title: string, content: string) {
+// export async function saveNewMemo3(title: string, content: string) {
 
 //     const data = {
 //         title: title,
 //         content: content
 //     };
 
-//     const params: apiWithJsonDataAndJwtParams = {
+//     const result = await apiWithJwtTemplate({
 //         uri: "/todo/save-new-todo",
 //         data: data,
-//         method: "POST",
-//         withHeaders: [withJsonReceived, withJwtAsync]
-//     };
-
-//     console.log(`with header - withJsonReceived, withJwtAsync`);
-
-//     const result = await apiWithJsonDataAndJwt(params);
+//         method: "POST"
+//     });
 
 //     if (result && result.status == 200) {
-//         console.log("new memo added");
-//         revalidatePath("/"); // invalidate cache and reload the page
-//         return true; // 클라이언트 코드에서 boolean 값에 따라 추가 작업 진행할지 결정되므로 return true를 함.
+//         revalidatePath("/");
 //     } else {
-//         return false;
-
+//         console.log("error !! - saveNewMemo3() in return phase.");
 //     }
 // }
 
+// // export async function saveNewMemo2(title: string, content: string) {
+
+// //     const data = {
+// //         title: title,
+// //         content: content
+// //     };
+
+// //     const params: apiWithJsonDataAndJwtParams = {
+// //         uri: "/todo/save-new-todo",
+// //         data: data,
+// //         method: "POST",
+// //         withHeaders: [withJsonReceived, withJwtAsync]
+// //     };
+
+// //     console.log(`with header - withJsonReceived, withJwtAsync`);
+
+// //     const result = await apiWithJsonDataAndJwt(params);
+
+// //     if (result && result.status == 200) {
+// //         console.log("new memo added");
+// //         revalidatePath("/"); // invalidate cache and reload the page
+// //         return true; // 클라이언트 코드에서 boolean 값에 따라 추가 작업 진행할지 결정되므로 return true를 함.
+// //     } else {
+// //         return false;
+
+// //     }
+// // }
 
 
-export default async function searchByTitle(keyword: string) {
-    const jwt = await getCookie("jwt");
-    if (!jwt)
-        return [];
 
-    console.log(`keyword => ${keyword}`);
+// export default async function searchByTitle(keyword: string) {
+//     const jwt = await getCookie("jwt");
+//     if (!jwt)
+//         return [];
 
-    return await fetch(`${apiUrl}/todo/search-by-title?keyword=${keyword}`, {
-        method: "get",
-        headers: {
-            "Authorization": `Bearer ${jwt}`
-        }
-    }).then(response => response.json());
+//     console.log(`keyword => ${keyword}`);
 
-}
+//     return await fetch(`${apiUrl}/todo/search-by-title?keyword=${keyword}`, {
+//         method: "get",
+//         headers: {
+//             "Authorization": `Bearer ${jwt}`
+//         }
+//     }).then(response => response.json());
+
+// }

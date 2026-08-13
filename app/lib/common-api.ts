@@ -4,8 +4,10 @@ import { cookies } from "next/headers";
 import { apiUrl } from "./config";
 
 
-const jwtRetention = 1000 * 30;
 
+
+
+const jwtRetention = 1000 * 30;
 
 export async function setCookie(key: string, value: string, maxAge: number) {
 
@@ -20,18 +22,6 @@ export async function setCookie(key: string, value: string, maxAge: number) {
     });
 }
 
-
-export async function getJwtAndRefreshKey() {
-    const jwt = await getCookie("jwt");
-    const refresh = await getCookie("refresh");
-
-    return {
-        jwt: jwt,
-        refresh: refresh
-    }
-}
-
-
 export async function getCookie(key: string) {
 
     const cookieStore = await cookies();
@@ -42,46 +32,48 @@ export async function getCookie(key: string) {
 }
 
 
-export type withFunctionType = (headers: Record<string, string>) => void;
+
+export type withHeader = (headers: Record<string, string>) => void;
 
 
-export interface apiWithJsonDataAndJwtParams {
-    uri: string
-    data: object
-    method: "POST" | "GET" | "PUT" | "DELETE"
-    withHeaders: withFunctionType[];
-}
-
-export const withJsonReceived: withFunctionType = async (headers) => {
+export const withHeaderJson: withHeader = async (headers) => {
     headers["Content-Type"] = "application/json"
 };
 
-export const withJwtAsync: withFunctionType = async (headers) => {
+export const withHeaderJwt: withHeader = async (headers) => {
     let jwt = await getCookie("jwt");
     if (jwt)
         headers["Authorization"] = `Bearer ${jwt}`;
-
 };
 
-interface apiWithJwtTemplateParams {
-    uri: string;
-    data: object;
-    method: "POST" | "GET" | "PUT" | "DELETE";
 
+export interface apiParam {
+    uri: string
+    data?: object
+    method: "POST" | "GET" | "PUT" | "DELETE"
+    withHeaders: withHeader[];
 }
 
+export async function apiWithJwtTemplate({ uri, data, method }: apiParam) {
 
-export async function apiWithJwtTemplate({ uri, data, method }: apiWithJwtTemplateParams) {
-
-
-    const params: apiWithJsonDataAndJwtParams = {
+    
+    let params: apiParam = {
         uri: uri,
-        data: data,
         method: method,
-        withHeaders: [withJsonReceived, withJwtAsync]
+        withHeaders: [withHeaderJson, withHeaderJwt]
     };
 
-    const result = await apiWithJsonDataAndJwt(params);
+    if(data != null){
+        params["data"] = data;
+    }
+
+    console.log();
+    console.log("-------------params :start");
+    console.log(params);
+    console.log("-------------params :end");
+    console.log();
+
+    const result = await callApi(params);
 
     if (result && result.status == 200) {
         return {
@@ -90,11 +82,10 @@ export async function apiWithJwtTemplate({ uri, data, method }: apiWithJwtTempla
         }
     } else {
         if (result && result.status == 403) {
-            // todo: refresh 
             console.log("jwt refreshing..");
             await refreshJwt();
-            await apiWithJsonDataAndJwt(params);
 
+            return await callApi(params);
         } else {
             return {
                 status: result?.status,
@@ -107,10 +98,7 @@ export async function apiWithJwtTemplate({ uri, data, method }: apiWithJwtTempla
 }
 
 
-
-
-
-export async function apiWithJsonDataAndJwt({ uri, data, method, withHeaders }: apiWithJsonDataAndJwtParams) {
+export async function callApi({ uri, data, method, withHeaders }: apiParam) {
 
 
     const headers: Record<string, string> = {};
@@ -125,15 +113,15 @@ export async function apiWithJsonDataAndJwt({ uri, data, method, withHeaders }: 
         headers
     };
 
-    console.log(`\n\n`);
-    console.log(`url: -> ${uri}`)
-    console.log(`------------data`);
-    console.log(data);
-    console.log(`------------data end`);
-    console.log('------------header');
-    console.log(headers);
-    console.log('------------header end');
-    console.log(`\n\n`);
+    // console.log(`\n\n`);
+    // console.log(`url: -> ${uri}`)
+    // console.log(`------------data`);
+    // console.log(data);
+    // console.log(`------------data end`);
+    // console.log('------------header');
+    // console.log(headers);
+    // console.log('------------header end');
+    // console.log(`\n\n`);
 
 
     try {
@@ -156,29 +144,25 @@ export async function apiWithJsonDataAndJwt({ uri, data, method, withHeaders }: 
 }
 
 
-
 export async function refreshJwt() {
 
     const refreshToken = await getCookie("refresh");
 
-    const params: apiWithJsonDataAndJwtParams = {
+    const params: apiParam = {
         uri: "/member/refresh-JWT",
-        data: { refreshToken: refreshToken },
+        data: {refreshToken: refreshToken},
         method: "POST",
-        withHeaders: [withJsonReceived, withJwtAsync]
-
+        withHeaders: [withHeaderJson, withHeaderJwt]
     };
 
-    const result = await apiWithJsonDataAndJwt(params);
-    if (result) {
-
+    const result = await callApi(params);
+    if (result && result.data) {
+        
         setCookie("jwt", result.data.jwt, jwtRetention);
-
         console.log(`refreshJWT - result status -> ${result.status}`);
         console.log(`refreshJWT - result payload -> ${result.data.jwt}`);
-
-
-
-
+    }else{
+        console.log(`during refreshing jwt, response => ${result?.status}`);
     }
 }
+
