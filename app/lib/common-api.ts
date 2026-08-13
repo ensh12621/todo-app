@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { apiUrl } from "./config";
 
 
-const jwtRetention = 1000
+const jwtRetention = 1000 * 30;
 
 
 export async function setCookie(key: string, value: string, maxAge: number) {
@@ -63,10 +63,51 @@ export const withJwtAsync: withFunctionType = async (headers) => {
 
 };
 
-export async function putJwtAuthorization(headers: Record<string, string>) {
+interface apiWithJwtTemplateParams {
+    uri: string;
+    data: object;
+    method: "POST" | "GET" | "PUT" | "DELETE";
 
-    return headers;
 }
+
+
+export async function apiWithJwtTemplate({ uri, data, method }: apiWithJwtTemplateParams) {
+
+
+    const params: apiWithJsonDataAndJwtParams = {
+        uri: uri,
+        data: data,
+        method: method,
+        withHeaders: [withJsonReceived, withJwtAsync]
+    };
+
+    const result = await apiWithJsonDataAndJwt(params);
+
+    if (result && result.status == 200) {
+        return {
+            status: result.status,
+            data: result.data
+        }
+    } else {
+        if (result && result.status == 403) {
+            // todo: refresh 
+            console.log("jwt refreshing..");
+            await refreshJwt();
+            await apiWithJsonDataAndJwt(params);
+
+        } else {
+            return {
+                status: result?.status,
+                data: "error"
+            };
+        }
+
+
+    }
+}
+
+
+
 
 
 export async function apiWithJsonDataAndJwt({ uri, data, method, withHeaders }: apiWithJsonDataAndJwtParams) {
@@ -93,7 +134,7 @@ export async function apiWithJsonDataAndJwt({ uri, data, method, withHeaders }: 
     console.log(headers);
     console.log('------------header end');
     console.log(`\n\n`);
-    
+
 
     try {
         const response = await fetch(`${apiUrl}${uri}`, config)
@@ -130,14 +171,14 @@ export async function refreshJwt() {
 
     const result = await apiWithJsonDataAndJwt(params);
     if (result) {
-        
+
         setCookie("jwt", result.data.jwt, jwtRetention);
 
         console.log(`refreshJWT - result status -> ${result.status}`);
         console.log(`refreshJWT - result payload -> ${result.data.jwt}`);
-        
 
-        
 
-    }  
+
+
+    }
 }

@@ -1,13 +1,11 @@
 'use client'
 
-import React, { useMemo, useState } from "react";
-import { saveNewMemo2 } from "./lib/memo-api";
+import React, { useState } from "react";
+import { saveNewMemo3 } from "./lib/memo-api";
 import EmptyMemoCard from "./ui/EmptyMemoCard";
 import MemoCard from "./ui/MemoCard";
 import NewMemoDialog from "./ui/NewMemoDialog";
 import { useMemoStore } from "./store/memo-store";
-import { refreshJwt } from "./lib/common-api";
-
 
 export default function StickerList( /*{memoList} : StickerListProps*/) {
 
@@ -37,18 +35,26 @@ export default function StickerList( /*{memoList} : StickerListProps*/) {
 
     const handleSaveNewMemo = async () => {
         // saveNewMemo(newTitle, newContent);
-        if (await saveNewMemo2(newTitle, newContent)) {
-            setNewTitle("");
-            setNewContent("");
-            setShowNewMemoDialog(false);
-        } else {
-            await refreshJwt();
-            console.log("retry to save new memo again with new jwt generated using refresh key..");
-            await saveNewMemo2(newTitle, newContent)
-            setNewTitle("");
-            setNewContent("");
-            setShowNewMemoDialog(false);
-        }
+
+
+        await saveNewMemo3(newTitle, newContent);
+        setNewTitle("");
+        setNewContent("");
+        setShowNewMemoDialog(false);
+
+        // saveNewMemo2()..
+        // if (await saveNewMemo2(newTitle, newContent)) {
+        //     setNewTitle("");
+        //     setNewContent("");
+        //     setShowNewMemoDialog(false);
+        // } else {
+        //     await refreshJwt();
+        //     console.log("retry to save new memo again with new jwt generated using refresh key..");
+        //     await saveNewMemo2(newTitle, newContent)
+        //     setNewTitle("");
+        //     setNewContent("");
+        //     setShowNewMemoDialog(false);
+        // }
 
     };
 

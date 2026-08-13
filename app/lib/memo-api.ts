@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { MemoEntity } from "../store/memo-store";
-import { apiWithJsonDataAndJwt, apiWithJsonDataAndJwtParams, getCookie,  withJsonReceived, withJwtAsync } from "./common-api";
+import { apiWithJsonDataAndJwt, apiWithJsonDataAndJwtParams, apiWithJwtTemplate, getCookie, withJsonReceived, withJwtAsync } from "./common-api";
 
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -47,35 +47,51 @@ export async function getMemoList(): Promise<Array<MemoEntity>> {
     }
 }
 
-
-
-export async function saveNewMemo2(title: string, content: string) {
+export async function saveNewMemo3(title: string, content: string) {
 
     const data = {
         title: title,
         content: content
     };
 
-    const params: apiWithJsonDataAndJwtParams = {
+    const result = await apiWithJwtTemplate({
         uri: "/todo/save-new-todo",
         data: data,
-        method: "POST",
-        withHeaders: [withJsonReceived, withJwtAsync]
-    };
+        method: "POST"
+    });
 
-    console.log(`with header - withJsonReceived, withJwtAsync`);
-
-    const result = await apiWithJsonDataAndJwt(params);
-
-    if (result && result.status == 200) {
-        console.log("new memo added");
-        revalidatePath("/"); // invalidate cache and reload the page
-        return true; // 클라이언트 코드에서 boolean 값에 따라 추가 작업 진행할지 결정되므로 return true를 함.
-    } else {
-        return false;
-
+    if(result && result.status == 200){
+        revalidatePath("/");
     }
 }
+
+// export async function saveNewMemo2(title: string, content: string) {
+
+//     const data = {
+//         title: title,
+//         content: content
+//     };
+
+//     const params: apiWithJsonDataAndJwtParams = {
+//         uri: "/todo/save-new-todo",
+//         data: data,
+//         method: "POST",
+//         withHeaders: [withJsonReceived, withJwtAsync]
+//     };
+
+//     console.log(`with header - withJsonReceived, withJwtAsync`);
+
+//     const result = await apiWithJsonDataAndJwt(params);
+
+//     if (result && result.status == 200) {
+//         console.log("new memo added");
+//         revalidatePath("/"); // invalidate cache and reload the page
+//         return true; // 클라이언트 코드에서 boolean 값에 따라 추가 작업 진행할지 결정되므로 return true를 함.
+//     } else {
+//         return false;
+
+//     }
+// }
 
 
 
